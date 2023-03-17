@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using GrainInterfaces;
+using Microsoft.Extensions.Configuration;
+using Orleans.Configuration;
 
 try
 {
@@ -30,9 +32,20 @@ catch (Exception e)
 static async Task<IHost> StartClientAsync()
 {
 	var builder = new HostBuilder()
-		.UseOrleansClient(client =>
+		.ConfigureAppConfiguration(x => x.AddUserSecrets(typeof(Program).Assembly))
+		.UseOrleansClient((context, client) =>
 		{
-			client.UseLocalhostClustering();
+			var connectionString = context.Configuration["storage"];
+
+			client.Configure<ClusterOptions>(options =>
+							 {
+								 options.ClusterId = "ShoppingCartCluster";
+								 options.ServiceId = "ShoppingCartService";
+							 });
+
+			//client.UseLocalhostClustering();
+			client.UseAzureStorageClustering(options => options.ConfigureTableServiceClient(connectionString));
+
 		})
 		.ConfigureLogging(logging => logging.AddConsole());
 

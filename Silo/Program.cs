@@ -1,33 +1,71 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Orleans.Configuration;
 
-try
+internal class Program
 {
-	using IHost host = await StartSiloAsync();
-	Console.WriteLine("\n\n Press Enter to terminate...\n\n");
-	Console.ReadLine();
-
-	await host.StopAsync();
-
-	return 0;
-}
-catch (Exception ex)
-{
-	Console.WriteLine(ex);
-	return 1;
-}
-
-static async Task<IHost> StartSiloAsync()
-{
-	var builder = new HostBuilder()
-		.UseOrleans(silo =>
+	private static async Task<int> Main(string[] args)
+	{
+		try
 		{
-			silo.UseLocalhostClustering()
-				.ConfigureLogging(logging => logging.AddConsole());
-		});
+			using IHost host = await StartSiloAsync(args);
+			Console.WriteLine("\n\n Press Enter to terminate...\n\n");
+			Console.ReadLine();
 
-	var host = builder.Build();
-	await host.StartAsync();
+			await host.StopAsync();
 
-	return host;
+			return 0;
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine(ex);
+			return 1;
+		}
+
+		static async Task<IHost> StartSiloAsync(string[] args)
+		{
+			//var builder = new HostBuilder()
+			//	.UseOrleans(silo =>
+			//	{
+			//		silo.UseLocalhostClustering()
+			//			.ConfigureLogging(logging => logging.AddConsole());
+			//	});
+
+
+			var builder = Host.CreateDefaultBuilder(args)
+				.ConfigureAppConfiguration(x => x.AddUserSecrets(typeof(Program).Assembly))
+			.UseOrleans(
+				(context, builder) =>
+				{
+					if (context.HostingEnvironment.IsDevelopment())
+					{
+						builder.UseLocalhostClustering();						
+							//.AddMemoryGrainStorage("shopping-cart");
+						//.AddStartupTask<SeedProductStoreTask>();
+					}
+					else
+					{
+						var siloPort = 11111;
+						var gatewayPort = 30000;
+						var connectionString = context.Configuration["storage"];
+
+						builder.ConfigureEndpoints(siloPort, gatewayPort);
+						builder.Configure<ClusterOptions>(options =>
+						{
+							options.ClusterId = "ShoppingCartCluster";
+							options.ServiceId = "ShoppingCartService";
+						});
+						builder.UseAzureStorageClustering(options => options.ConfigureTableServiceClient(connectionString));
+						builder.AddAzureTableGrainStorage("shopping-cart",	options => options.ConfigureTableServiceClient(connectionString));
+					}
+				});
+
+
+			var host = builder.Build();
+			await host.StartAsync();
+
+			return host;
+		}
+	}
 }

@@ -58,15 +58,13 @@ static async Task<IHost> StartClientAsync()
 
 static async Task DoClientWorkAsync(IClusterClient client)
 {
-	var id = Guid.Parse("b4d09f63-a45f-485e-a728-91473dd9b45e");
+	var id = Guid.Parse("b4d09f63-a45f-485e-a728-91473dd9b46e");
 
 	var search = client.GetGrain<IVinSearchGrain>(id);
-	var number = await search.GetNumber();
-	Console.WriteLine($"Number is {number}");
-	await search.SetNumber(++number);
-
-	number = await search.GetNumber();
-	Console.WriteLine($"Number is now {number}");
+	////var number = await search.GetNumber();
+	//Console.WriteLine($"Number is {number}");
+	await search.AddVin("some_vin");
+	await search.AddMakeId(5);
 
 	var friend = client.GetGrain<IHello>(0);
 	var response = await friend.SayHello("Good morning, HelloGrain!");

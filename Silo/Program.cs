@@ -50,6 +50,12 @@ internal class Program
 					});
 					builder.UseAzureStorageClustering(options => options.ConfigureTableServiceClient(connectionString));
 					builder.AddAzureTableGrainStorage("vinSearchStore", options => options.ConfigureTableServiceClient(connectionString));
+
+					builder.AddLogStorageBasedLogConsistencyProvider();
+					//builder.AddStateStorageBasedLogConsistencyProviderAsDefault();
+					//builder.AddLogStorageBasedLogConsistencyProviderAsDefault();
+
+					//builder.AddCustomStorageBasedLogConsistencyProviderAsDefault();
 				});
 
 

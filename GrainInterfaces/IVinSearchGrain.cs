@@ -8,7 +8,10 @@ namespace GrainInterfaces
 {
 	public interface IVinSearchGrain : IGrainWithGuidKey
 	{
-		Task SetNumber(int number);
-		Task<int> GetNumber();
+		//Task SetNumber(int number);
+		//Task<int> GetNumber();
+
+		Task AddVin(string vin);
+		Task AddMakeId(int makeId);
 	}
 }

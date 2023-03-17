@@ -5,13 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using GrainInterfaces;
+using Orleans.EventSourcing;
 using Orleans.Providers;
 using Orleans.Runtime;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Grains
 {
 	[StorageProvider(ProviderName = "vinSearchStore")]
-	internal class VinSearchGrain : Grain<VinSearchState>, IVinSearchGrain
+	internal class VinSearchGrain : JournaledGrain<VinSearchState>, IVinSearchGrain
 	{
 		//private readonly IPersistentState<VinSearchState> store;
 
@@ -20,21 +22,67 @@ namespace Grains
 		//	this.store = searches;
 		//}
 
-		public Task<int> GetNumber()
+		//public Task<int> GetNumber()
+		//{
+		//	return Task.FromResult(State.Number);
+		//}
+
+		//public async Task SetNumber(int number)
+		//{
+		//	State.Number = number;
+		//	await WriteStateAsync();
+		//}
+
+		public Task AddVin(string vin)
 		{
-			return Task.FromResult(State.Number);
+			RaiseEvent(new VinAddedEvent()
+			{
+				Vin = vin
+			});
+			var state = State;
+			return Task.CompletedTask;
 		}
 
-		public async Task SetNumber(int number)
+		public Task AddMakeId(int makeId)
 		{
-			State.Number = number;
-			await WriteStateAsync();
+			RaiseEvent(new MakeIdAddedEvent()
+			{
+				MakeId = makeId
+			});
+			var state = State;
+			return Task.CompletedTask;
 		}
 	}
 
 	[Serializable]
 	public class VinSearchState
 	{
-		public int Number { get; set; }
+		void Apply(VinAddedEvent @event)
+		{
+			// code that updates the state
+			Vin = @event.Vin;
+		}
+
+		void Apply(MakeIdAddedEvent @event)
+		{
+			// code that updates the state
+			MakeId = @event.MakeId;
+		}
+
+		public string Vin { get; private set; }
+		public int MakeId { get; private set; }
 	}
+
+	[Serializable]
+	public class VinAddedEvent
+	{
+		public string Vin { get; set; }
+	}
+
+	[Serializable]
+	public class MakeIdAddedEvent
+	{
+		public int MakeId { get; set; }
+	}
+
 }

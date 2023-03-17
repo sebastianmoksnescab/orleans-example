@@ -6,3 +6,10 @@ services:
     build:
       context: .
       dockerfile: Silo/Dockerfile
+
+  client:
+    image: ${DOCKER_REGISTRY-}client
+    build:
+      context: .
+      dockerfile: Client/Dockerfile
+

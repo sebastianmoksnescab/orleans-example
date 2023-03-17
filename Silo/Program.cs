@@ -26,14 +26,6 @@ internal class Program
 
 		static async Task<IHost> StartSiloAsync(string[] args)
 		{
-			//var builder = new HostBuilder()
-			//	.UseOrleans(silo =>
-			//	{
-			//		silo.UseLocalhostClustering()
-			//			.ConfigureLogging(logging => logging.AddConsole());
-			//	});
-
-
 			var builder = Host.CreateDefaultBuilder(args)
 				.ConfigureAppConfiguration(x => x.AddUserSecrets(typeof(Program).Assembly))
 			.UseOrleans(
@@ -52,10 +44,6 @@ internal class Program
 					builder.AddAzureTableGrainStorage("vinSearchStore", options => options.ConfigureTableServiceClient(connectionString));
 
 					builder.AddLogStorageBasedLogConsistencyProvider();
-					//builder.AddStateStorageBasedLogConsistencyProviderAsDefault();
-					//builder.AddLogStorageBasedLogConsistencyProviderAsDefault();
-
-					//builder.AddCustomStorageBasedLogConsistencyProviderAsDefault();
 				});
 
 

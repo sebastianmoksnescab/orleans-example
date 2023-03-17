@@ -42,8 +42,20 @@ internal class Program
 					});
 					builder.UseAzureStorageClustering(options => options.ConfigureTableServiceClient(connectionString));
 					builder.AddAzureTableGrainStorage("vinSearchStore", options => options.ConfigureTableServiceClient(connectionString));
-
-					builder.AddLogStorageBasedLogConsistencyProvider();
+					//builder.AddAzureQueueStreams("AzureQueueProvider", configurator =>
+					//{
+					//	configurator.ConfigureAzureQueue(
+					//		ob => ob.Configure(options =>
+					//	 {
+					//		 options.ConnectionString = connectionString;
+					//		 options.QueueNames = new List<string> { "vinsearch-azurequeueprovider-0" };
+					//	 }));
+					// configurator.ConfigureCacheSize(1024);
+					// //configurator.ConfigurePullingAgent(ob => ob.Configure(options =>
+					// //{
+					// // options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(200);
+					// //}));
+					// builder.AddLogStorageBasedLogConsistencyProvider();
 				});
 
 

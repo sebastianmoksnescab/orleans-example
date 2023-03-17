@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Common;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Orleans.Configuration;
@@ -44,8 +45,8 @@ internal class Program
 
 					builder.Configure<ClusterOptions>(options =>
 					{
-						options.ClusterId = "ShoppingCartCluster";
-						options.ServiceId = "ShoppingCartService";
+						options.ClusterId = Constants.ClusterId;
+						options.ServiceId = Constants.ServiceId;
 					});
 					builder.UseAzureStorageClustering(options => options.ConfigureTableServiceClient(connectionString));
 					builder.AddAzureTableGrainStorage("shopping-cart", options => options.ConfigureTableServiceClient(connectionString));

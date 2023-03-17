@@ -5,6 +5,7 @@ using GrainInterfaces;
 using Microsoft.Extensions.Configuration;
 using Orleans.Configuration;
 using System.Net;
+using Common;
 
 try
 {
@@ -39,9 +40,9 @@ static async Task<IHost> StartClientAsync()
 			var hostEntry = Dns.GetHostEntry("silo");
 			client.Configure<ClusterOptions>(options =>
 							 {
-								 options.ClusterId = "ShoppingCartCluster";
-								 options.ServiceId = "ShoppingCartService";
-								 
+								 options.ClusterId = Constants.ClusterId;
+								 options.ServiceId = Constants.ServiceId;
+
 							 });
 			client.UseAzureStorageClustering(options => options.ConfigureTableServiceClient(connectionString));
 		})

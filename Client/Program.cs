@@ -58,7 +58,7 @@ static async Task<IHost> StartClientAsync()
 
 static async Task DoClientWorkAsync(IClusterClient client)
 {
-	var id = Guid.Parse("b4d09f63-a45f-485e-a728-91473dd9b46e");
+	var id = Guid.Parse("b4d09f63-a45f-485e-a728-91473dd9b46a");
 
 	var search = client.GetGrain<IVinSearchGrain>(id);
 	////var number = await search.GetNumber();

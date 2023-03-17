@@ -13,6 +13,7 @@ using static System.Net.Mime.MediaTypeNames;
 namespace Grains
 {
 	[StorageProvider(ProviderName = "vinSearchStore")]
+	[LogConsistencyProvider(ProviderName = "LogStorage")]
 	internal class VinSearchGrain : JournaledGrain<VinSearchState>, IVinSearchGrain
 	{
 		//private readonly IPersistentState<VinSearchState> store;
@@ -33,37 +34,37 @@ namespace Grains
 		//	await WriteStateAsync();
 		//}
 
-		public Task AddVin(string vin)
+		public async Task AddVin(string vin)
 		{
 			RaiseEvent(new VinAddedEvent()
 			{
 				Vin = vin
 			});
 			var state = State;
-			return Task.CompletedTask;
+			await ConfirmEvents();
 		}
 
-		public Task AddMakeId(int makeId)
+		public async Task AddMakeId(int makeId)
 		{
 			RaiseEvent(new MakeIdAddedEvent()
 			{
 				MakeId = makeId
 			});
 			var state = State;
-			return Task.CompletedTask;
+			await ConfirmEvents();
 		}
 	}
 
 	[Serializable]
 	public class VinSearchState
 	{
-		void Apply(VinAddedEvent @event)
+		public void Apply(VinAddedEvent @event)
 		{
 			// code that updates the state
 			Vin = @event.Vin;
 		}
 
-		void Apply(MakeIdAddedEvent @event)
+		public void Apply(MakeIdAddedEvent @event)
 		{
 			// code that updates the state
 			MakeId = @event.MakeId;

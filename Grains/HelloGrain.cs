@@ -1,5 +1,6 @@
 ﻿using GrainInterfaces;
 using Microsoft.Extensions.Logging;
+using Orleans.Streams;
 
 namespace Grains;
 
@@ -11,6 +12,10 @@ public class HelloGrain : Grain, IHello
 
 	ValueTask<string> IHello.SayHello(string greeting)
 	{
+		//Orleans.Streams.IStreamProvider streamProvider = O .GetStreamProvider("MyStreamProvider");
+
+
+
 		_logger.LogInformation(
 			"SayHello message received: greeting = '{Greeting}'", greeting);
 

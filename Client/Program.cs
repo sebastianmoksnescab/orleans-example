@@ -60,11 +60,12 @@ static async Task DoClientWorkAsync(IClusterClient client)
 {
 	var id = Guid.Parse("b4d09f63-a45f-485e-a728-91473dd9b46a");
 
-	var search = client.GetGrain<IVinSearchGrain>(id);
+	var search = client.GetGrain<IVinStoreGrain>("123");
+	await search.RequestSearch();
 	////var number = await search.GetNumber();
 	//Console.WriteLine($"Number is {number}");
-	await search.AddVin("some_vin");
-	await search.AddMakeId(5);
+	//await search.AddVin("some_vin");
+	//await search.AddMakeId(5);
 
 	var friend = client.GetGrain<IHello>(0);
 	var response = await friend.SayHello("Good morning, HelloGrain!");

@@ -27,9 +27,9 @@
 
 	public enum SearchStatus
 	{
-		NotStarted,
-		Started,
-		Finished
+		NotStarted=0,
+		Started=1,
+		Finished=3
 	}
 
 }

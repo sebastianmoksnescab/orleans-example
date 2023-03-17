@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,6 +8,8 @@ using System.Xml;
 using GrainInterfaces;
 using Orleans.EventSourcing;
 using Orleans.Providers;
+using Orleans.Streams;
+using Orleans;
 
 namespace Grains
 {
@@ -51,6 +54,21 @@ namespace Grains
 
 		private async Task StartSearch()
 		{
+
+			var streamProvider = Orleans.GrainStreamingExtensions.GetStreamProvider(this, "AzureQueueProvider");
+			//Orleans.Streams.IStreamProvider streamProvider = base.GetStreamProvider("AzureQueueProvider");
+
+			//var guid = new Guid("some guid identifying the chat room");
+			//// Get one of the providers which we defined in our config
+			//var streamProvider = GetStreamProvider("StreamProvider");
+			//// Get the reference to a stream
+			var streamId = Orleans.Runtime.StreamId.Create("RANDOMDATA", Guid.NewGuid());
+			var stream = streamProvider.GetStream<VinSearchEvent>(streamId);
+			await stream.OnNextAsync(new VinSearchEvent { Foo = "bar1" });
+			await stream.OnNextAsync(new VinSearchEvent { Foo = "bar2" });
+			await stream.OnNextAsync(new VinSearchEvent { Foo = "bar3" });
+			await stream.OnNextAsync(new VinSearchEvent { Foo = "bar4" });
+			await stream.OnNextAsync(new VinSearchEvent { Foo = "bar5" });
 			//IStreamProvider streamProvider = base.GetStreamProvider("MyStreamProvider");
 
 			//IAsyncStream<string> chatStream =
@@ -61,6 +79,13 @@ namespace Grains
 			//RaiseEvent(new VinSearchStarted { });
 
 		}
+	}
+
+	[GenerateSerializer]
+	public struct VinSearchEvent
+	{
+		[Id(0)]
+		public string Foo { get; set; }
 	}
 
 	[Serializable]

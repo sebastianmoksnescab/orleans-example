@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Orleans.Configuration;
+using Orleans.Hosting;
+using Orleans.Providers.Streams.AzureQueue;
 
 internal class Program
 {
@@ -35,6 +37,23 @@ internal class Program
 					var gatewayPort = 30000;
 					var connectionString = context.Configuration["storage"];
 
+					Action<SiloAzureQueueStreamConfigurator> queueConfig = configurator =>
+					{
+						configurator.ConfigureAzureQueue(
+							ob => ob.Configure(options =>
+							{
+								options.ConfigureQueueServiceClient(connectionString);
+								options.QueueNames = new List<string> { "yourprefix-azurequeueprovider-0" };
+							}));
+						configurator.ConfigureCacheSize(1024);
+						//configurator.ConfigurePullingAgent(ob => ob.Configure(options =>
+						//{
+						//	options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(200);
+						//}));
+					};
+
+
+
 					builder.Configure<ClusterOptions>(options =>
 					{
 						options.ClusterId = Constants.ClusterId;
@@ -42,22 +61,9 @@ internal class Program
 					});
 					builder.UseAzureStorageClustering(options => options.ConfigureTableServiceClient(connectionString));
 					builder.AddAzureTableGrainStorage("vinSearchStore", options => options.ConfigureTableServiceClient(connectionString));
-					//builder.AddAzureQueueStreams("AzureQueueProvider", configurator =>
-					//{
-					//	configurator.ConfigureAzureQueue(
-					//		ob => ob.Configure(options =>
-					//	 {
-					//		 options.ConnectionString = connectionString;
-					//		 options.QueueNames = new List<string> { "vinsearch-azurequeueprovider-0" };
-					//	 }));
-					// configurator.ConfigureCacheSize(1024);
-					// //configurator.ConfigurePullingAgent(ob => ob.Configure(options =>
-					// //{
-					// // options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(200);
-					// //}));
-					// builder.AddLogStorageBasedLogConsistencyProvider();
+					builder.AddAzureQueueStreams("AzureQueueProvider", queueConfig);
+					builder.AddLogStorageBasedLogConsistencyProvider();
 				});
-
 
 			var host = builder.Build();
 			await host.StartAsync();

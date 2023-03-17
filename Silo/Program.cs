@@ -38,27 +38,17 @@ internal class Program
 			.UseOrleans(
 				(context, builder) =>
 				{
-					if (context.HostingEnvironment.IsDevelopment())
-					{
-						builder.UseLocalhostClustering();						
-							//.AddMemoryGrainStorage("shopping-cart");
-						//.AddStartupTask<SeedProductStoreTask>();
-					}
-					else
-					{
-						var siloPort = 11111;
-						var gatewayPort = 30000;
-						var connectionString = context.Configuration["storage"];
+					var siloPort = 11111;
+					var gatewayPort = 30000;
+					var connectionString = context.Configuration["storage"];
 
-						builder.ConfigureEndpoints(siloPort, gatewayPort);
-						builder.Configure<ClusterOptions>(options =>
-						{
-							options.ClusterId = "ShoppingCartCluster";
-							options.ServiceId = "ShoppingCartService";
-						});
-						builder.UseAzureStorageClustering(options => options.ConfigureTableServiceClient(connectionString));
-						builder.AddAzureTableGrainStorage("shopping-cart",	options => options.ConfigureTableServiceClient(connectionString));
-					}
+					builder.Configure<ClusterOptions>(options =>
+					{
+						options.ClusterId = "ShoppingCartCluster";
+						options.ServiceId = "ShoppingCartService";
+					});
+					builder.UseAzureStorageClustering(options => options.ConfigureTableServiceClient(connectionString));
+					builder.AddAzureTableGrainStorage("shopping-cart", options => options.ConfigureTableServiceClient(connectionString));
 				});
 
 

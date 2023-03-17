@@ -6,10 +6,16 @@ services:
     build:
       context: .
       dockerfile: Silo/Dockerfile
+    volumes:
+    - $APPDATA/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
 
   client:
     image: ${DOCKER_REGISTRY-}client
+    depends_on:
+    - silo
     build:
       context: .
       dockerfile: Client/Dockerfile
+    volumes:
+    - $APPDATA/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
 

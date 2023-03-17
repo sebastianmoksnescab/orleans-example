@@ -4,15 +4,15 @@ using Microsoft.Extensions.DependencyInjection;
 using GrainInterfaces;
 using Microsoft.Extensions.Configuration;
 using Orleans.Configuration;
+using System.Net;
 
 try
 {
+	await Task.Delay(6000);
 	using IHost host = await StartClientAsync();
 	var client = host.Services.GetRequiredService<IClusterClient>();
 
 	await DoClientWorkAsync(client);
-	Console.ReadKey();
-
 	await host.StopAsync();
 
 	return 0;
@@ -36,16 +36,14 @@ static async Task<IHost> StartClientAsync()
 		.UseOrleansClient((context, client) =>
 		{
 			var connectionString = context.Configuration["storage"];
-
+			var hostEntry = Dns.GetHostEntry("silo");
 			client.Configure<ClusterOptions>(options =>
 							 {
 								 options.ClusterId = "ShoppingCartCluster";
 								 options.ServiceId = "ShoppingCartService";
+								 
 							 });
-
-			//client.UseLocalhostClustering();
 			client.UseAzureStorageClustering(options => options.ConfigureTableServiceClient(connectionString));
-
 		})
 		.ConfigureLogging(logging => logging.AddConsole());
 

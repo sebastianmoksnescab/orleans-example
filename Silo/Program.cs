@@ -49,7 +49,7 @@ internal class Program
 						options.ServiceId = Constants.ServiceId;
 					});
 					builder.UseAzureStorageClustering(options => options.ConfigureTableServiceClient(connectionString));
-					builder.AddAzureTableGrainStorage("shopping-cart", options => options.ConfigureTableServiceClient(connectionString));
+					builder.AddAzureTableGrainStorage("vinSearchStore", options => options.ConfigureTableServiceClient(connectionString));
 				});
 
 

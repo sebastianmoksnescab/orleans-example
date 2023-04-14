@@ -6,6 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Orleans.Configuration;
 using System.Net;
 using Common;
+using System.Xml;
+using Orleans.Streams;
+using Orleans.Providers.Streams.AzureQueue;
 
 try
 {
@@ -36,7 +39,26 @@ static async Task<IHost> StartClientAsync()
 		.ConfigureAppConfiguration(x => x.AddUserSecrets(typeof(Program).Assembly))
 		.UseOrleansClient((context, client) =>
 		{
+
+
 			var connectionString = context.Configuration["storage"];
+
+			Action<ClusterClientAzureQueueStreamConfigurator> queueConfig = configurator =>
+			{
+				configurator.ConfigureAzureQueue(
+					ob => ob.Configure(options =>
+					{
+						options.ConfigureQueueServiceClient(connectionString);
+						options.QueueNames = new List<string> { "yourprefix-azurequeueprovider-0" };
+					}));
+				//configurator.ConfigureCacheSize(1024);
+				//configurator.ConfigurePullingAgent(ob => ob.Configure(options =>
+				//{
+				//	options.GetQueueMsgsTimerPeriod = TimeSpan.FromMilliseconds(200);
+				//}));
+			};
+
+
 			var hostEntry = Dns.GetHostEntry("silo");
 			client.Configure<ClusterOptions>(options =>
 							 {
@@ -44,6 +66,8 @@ static async Task<IHost> StartClientAsync()
 								 options.ServiceId = Constants.ServiceId;
 
 							 });
+			client.AddAzureQueueStreams("AzureQueueProvider", queueConfig);
+			//client.AddAzureQueueStreams()
 			client.UseAzureStorageClustering(options => options.ConfigureTableServiceClient(connectionString));
 		})
 		.ConfigureLogging(logging => logging.AddConsole());
@@ -60,8 +84,15 @@ static async Task DoClientWorkAsync(IClusterClient client)
 {
 	var id = Guid.Parse("b4d09f63-a45f-485e-a728-91473dd9b46a");
 
-	var search = client.GetGrain<IVinStoreGrain>("123");
-	await search.RequestSearch();
+	var vin = "123ABC";
+
+	var streamProvider = client.GetStreamProvider("AzureQueueProvider");
+
+	IAsyncStream<string> chatStream = streamProvider.GetStream<string>("MyNamespace", id);
+	await chatStream.OnNextAsync("foo3");
+
+	//var search = client.GetGrain<IVinStoreGrain>("123");
+	//await search.RequestSearch();
 	////var number = await search.GetNumber();
 	//Console.WriteLine($"Number is {number}");
 	//await search.AddVin("some_vin");

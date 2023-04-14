@@ -1,11 +1,14 @@
 ﻿using GrainInterfaces;
 using Orleans.EventSourcing;
 using Orleans.Providers;
+using Orleans.Runtime;
+using Orleans.Streams;
 
 namespace Grains
 {
 	[StorageProvider(ProviderName = "vinSearchStore")]
 	[LogConsistencyProvider(ProviderName = "LogStorage")]
+	[ImplicitStreamSubscription("MyNamespace")]
 	internal class VinSearchGrain : JournaledGrain<VinSearchState>, IVinSearchGrain
 	{
 		public async Task AddVin(string vin)
@@ -26,6 +29,31 @@ namespace Grains
 			});
 			var state = State;
 			await ConfirmEvents();
+		}
+
+		public override async Task OnActivateAsync(CancellationToken cancellationToken)
+		{
+			// Create a GUID based on our GUID as a grain
+			var guid = this.GetPrimaryKey();
+
+			// Get one of the providers which we defined in config
+			var streamProvider = this.GetStreamProvider("AzureQueueProvider");
+
+			// Get the reference to a stream
+			var streamId = StreamId.Create("MyNamespace", guid);
+			var stream = streamProvider.GetStream<string>(streamId);
+
+			// Set our OnNext method to the lambda which simply prints the data.
+			// This doesn't make new subscriptions, because we are using implicit 
+			// subscriptions via [ImplicitStreamSubscription].
+			await stream.SubscribeAsync<string>(
+				async (data, token) =>
+				{
+					Console.WriteLine(data);
+					await Task.CompletedTask;
+				});
+
+			await base.OnActivateAsync(cancellationToken);
 		}
 	}
 
